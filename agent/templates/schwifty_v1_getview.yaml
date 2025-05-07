@@ -1,0 +1,11 @@
+{{- range $name,$get := .Values.getViews }}
+---
+apiVersion: schwifty.pewty.fr/v1
+kind: GetView
+metadata:
+  labels:
+    {{- include "schwifty.labels" $ | nindent 4 }}
+  name: {{ $name }}
+spec:
+  {{- toYaml $get | nindent 2 }}
+{{- end}}

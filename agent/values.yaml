@@ -1,0 +1,824 @@
+fullnameOverride: ""
+nameOverride: ""
+
+image:
+  # Must be defined if type is empty
+  repository: "69b10931.c1.gra9.container-registry.ovh.net/schwifty-public"
+  name: "agent"
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "v1.0.0"
+
+env: []
+
+# -- https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/
+serviceAccount:
+  enabled: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set fullname is used
+  name: "schwifty-back"
+
+podAnnotations:
+  checksum/config: "{{ toYaml $.Values.config | sha256sum }}"
+
+# -- https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+podSecurityContext:
+  fsGroup: 1000
+
+# -- https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+securityContext:
+  capabilities:
+    drop:
+      - ALL
+  runAsNonRoot: true
+  runAsUser: 1000
+
+# -- https://kubernetes.io/docs/concepts/services-networking/service/
+service:
+  annotations: {}
+
+  type: ClusterIP
+  ports:
+    - name: api
+      port: 16666
+    - name: portforward
+      port: 16667
+
+# -- https://kubernetes.io/docs/concepts/services-networking/ingress/
+ingress:
+  enabled: false
+  className: ""
+  hosts:
+  #   - host: "api.example.com"
+  #     paths:
+  #       - path: /
+  #         pathType: ImplementationSpecific
+  #         portName: api
+  #   - host: "portforward.example.com"
+  #     paths:
+  #       - path: /
+  #         pathType: ImplementationSpecific
+  #         portName: portforward
+
+# -- https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+resources:
+  {}
+  # limits:
+  #   cpu: 200m
+  #   memory: 200Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 100Mi
+
+replicaCount: 1
+
+# -- https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
+autoscaling:
+  enabled: false
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 10%
+      maxSurge: 10%
+
+# -- https://kubernetes.io/docs/tasks/run-application/configure-pdb/
+podDisruptionBudget:
+  enabled: false
+  # minAvailable: 1
+  maxUnavailable: 10%
+
+tolerations: []
+
+nodeSelector: {}
+
+# -- https://kubernetes.io/docs/tasks/configure-pod-container/assign-pods-nodes-using-node-affinity/
+affinity: {}
+
+# -- https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/
+topologySpreadConstraints:
+  - maxSkew: 1
+    topologyKey: "kubernetes.io/hostname"
+    whenUnsatisfiable: ScheduleAnyway
+  - maxSkew: 1
+    topologyKey: "topology.kubernetes.io/zone"
+    whenUnsatisfiable: ScheduleAnyway
+
+# -- https://kubernetes.io/fr/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+livenessProbe: {}
+# -- https://kubernetes.io/fr/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+readinessProbe: {}
+# -- https://kubernetes.io/fr/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+startupProbe: {}
+
+rbac:
+  enabled: true
+
+customizations:
+  admin:
+    groupSelector: "schwifty-admin-users"
+    action: default
+    navigation: admin
+    listView: default
+    getView: default
+  dev:
+    groupSelector: "schwifty-dev-users"
+    action: default
+    navigation: dev
+    listView: default
+    getView: default
+  support:
+    groupSelector: "schwifty-support-users"
+    action: default
+    navigation: support
+    listView: default
+    getView: default
+
+actions:
+  default:
+    - type: grafana
+      include:
+        - "pods"
+      exclude: []
+      verb: "link"
+      title: "Monitoring"
+      icon: "https://upload.wikimedia.org/wikipedia/commons/3/3b/Grafana_icon.svg"
+      payloadTemplate: "https://grafana.schwifty.fr/d/Schwifty/pods?orgId=1&var-namespace={{$.metadata.namespace}}&var-pod={{$.metadata.name}}"
+      parameters: []
+    - type: cordon
+      include:
+        - "nodes"
+      exclude:
+        - "*"
+    - type: uncordon
+      include:
+        - "nodes"
+      exclude:
+        - "*"
+    - type: drain
+      include:
+        - "nodes"
+      exclude:
+        - "*"
+    - type: exec
+      include:
+        []
+        # - "pods"
+      exclude:
+        - "*"
+    - type: logs
+      include:
+        - "pods"
+      exclude:
+        - "*"
+    - type: portforward
+      include:
+        - "pods"
+      exclude:
+        - "*"
+    - type: restart
+      include:
+        - "apps/deployments"
+        - "apps/statefulsets"
+        - "apps/daemonset"
+      exclude:
+        - "*"
+      verb: "patch"
+      title: "Restart"
+      icon: "58927"
+      payloadTemplate: |
+        {
+          "spec": {
+            "template": {
+              "metadata": {
+                "annotations": {
+                  "schwifty.pewty.fr/update": "{{datenow}}"
+                }
+              }
+            }
+          }
+        }
+      parameters: []
+    - type: scale
+      include:
+        - "apps/deployments"
+        - "apps/statefulsets"
+        - "apps/replicasets"
+      exclude:
+        - "*"
+      verb: "patch"
+      title: "Scale"
+      icon: "62475"
+      payloadTemplate: |
+        {
+          "spec": {
+            "replicas": {{replicas}}
+          }
+        }
+      parameters:
+        - name: "replicas"
+          defaultValue: "1"
+          description: "Number of replicas"
+    - type: sync
+      include:
+        - "helm.toolkit.fluxcd.io/helmreleases"
+        - "kustomize.toolkit.fluxcd.io/kustomizations"
+        - "source.toolkit.fluxcd.io/gitrepositories"
+        - "external-secrets.io/externalsecrets"
+        - "external-secrets.io/pushsecrets"
+      exclude:
+        - "*"
+      verb: "patch"
+      title: "Sync"
+      icon: "58927"
+      payloadTemplate: |
+        {
+          "metadata": {
+            "annotations": {
+              "schwifty.pewty.fr/update": "{{datenow}}"
+            }
+          }
+        }
+      parameters: []
+    - type: pause
+      include:
+        - "helm.toolkit.fluxcd.io/helmreleases"
+        - "kustomize.toolkit.fluxcd.io/kustomizations"
+        - "source.toolkit.fluxcd.io/gitrepositories"
+      exclude:
+        - "*"
+      verb: "patch"
+      title: "Pause"
+      icon: "58492"
+      payloadTemplate: |
+        {
+          "spec": {
+            "suspend": true
+          }
+        }
+      parameters: []
+    - type: resume
+      include:
+        - "helm.toolkit.fluxcd.io/helmreleases"
+        - "kustomize.toolkit.fluxcd.io/kustomizations"
+        - "source.toolkit.fluxcd.io/gitrepositories"
+      exclude:
+        - "*"
+      verb: "patch"
+      title: "Resume"
+      icon: "58573"
+      payloadTemplate: |
+        {
+          "spec": {
+            "suspend": false
+          }
+        }
+      parameters: []
+    - type: get
+      include:
+        - "*"
+      exclude: []
+    - type: create
+      include:
+        - "*"
+      exclude: []
+    - type: edit
+      include:
+        - "*"
+      exclude: []
+    - type: delete
+      include:
+        - "*"
+      exclude: []
+
+navigations:
+  admin:
+    other:
+      enabled: true
+      label: "Other"
+      icon: "62020"
+    items:
+      - label: "Nodes"
+        icon: "https://raw.githubusercontent.com/kubernetes/community/refs/heads/master/icons/svg/infrastructure_components/unlabeled/node.svg"
+        items:
+          - label: "NodeClaims"
+            route: "karpenter.sh/nodeclaims"
+          - label: "Nodes"
+            route: "nodes"
+          - label: "NodePools"
+            route: "karpenter.sh/nodepools"
+          - label: "EC2NodeClass"
+            route: "karpenter.k8s.aws/ec2nodeclasses"
+      - label: "Workload"
+        icon: "https://raw.githubusercontent.com/kubernetes/community/refs/heads/master/icons/svg/resources/unlabeled/pod.svg"
+        items:
+          - label: "Pods"
+            route: "pods"
+          - label: "Deployments"
+            route: "apps/deployments"
+          - label: "StatefulSets"
+            route: "apps/statefulsets"
+          - label: "DaemonSets"
+            route: "apps/daemonsets"
+          - label: "ReplicaSets"
+            route: "apps/replicasets"
+          - label: "ReplicationController"
+            route: "replicationcontrollers"
+          - label: "Jobs"
+            route: "batch/jobs"
+          - label: "CronJobs"
+            route: "batch/cronjobs"
+      - label: "Config"
+        icon: "https://raw.githubusercontent.com/kubernetes/community/refs/heads/master/icons/svg/resources/unlabeled/cm.svg"
+        items:
+          - label: "ConfigMaps"
+            route: "configmaps"
+          - label: "Secrets"
+            route: "secrets"
+          - label: "ResourceQuotas"
+            route: "resourcequotas"
+          - label: "LimitRanges"
+            route: "limitranges"
+          - label: "HorizontalPodAutoscalers"
+            route: "autoscaling/horizontalpodautoscalers"
+          - label: "PodDisruptionBudgets"
+            route: "policy/poddisruptionbudgets"
+          - label: "PriorityClasses"
+            route: "scheduling.k8s.io/priorityclasses"
+          - label: "RuntimeClasses"
+            route: "node.k8s.io/runtimeclasses"
+          - label: "Lease"
+            route: "coordination.k8s.io/leases"
+          - label: "MutatingWebhookConfigurations"
+            route: "admissionregistration.k8s.io/mutatingwebhookconfigurations"
+          - label: "ValidatingWebhookConfigurations"
+            route: "admissionregistration.k8s.io/validatingwebhookconfigurations"
+          - label: "CustomResourceDefinitions"
+            route: "apiextensions.k8s.io/customresourcedefinitions"
+          - label: "PodSecurityPolicies"
+            route: "policy/podsecuritypolicies"
+      - label: "Network"
+        icon: "https://raw.githubusercontent.com/kubernetes/community/refs/heads/master/icons/svg/resources/unlabeled/svc.svg"
+        items:
+          - label: "Services"
+            route: "services"
+          - label: "Endpoints"
+            route: "endpoints"
+          - label: "Ingresses"
+            route: "networking.k8s.io/ingresses"
+          - label: "IngresClasses"
+            route: "networking.k8s.io/ingressclasses"
+      - label: "Storage"
+        icon: "https://raw.githubusercontent.com/kubernetes/community/refs/heads/master/icons/svg/resources/unlabeled/pvc.svg"
+        items:
+          - label: "PersistentVolumeClaims"
+            route: "persistentvolumeclaims"
+          - label: "PersistentVolumes"
+            route: "persistentvolumes"
+          - label: "StorageClasses"
+            route: "storage.k8s.io/storageclasses"
+      - label: "Access Control"
+        icon: "https://raw.githubusercontent.com/kubernetes/community/refs/heads/master/icons/svg/resources/unlabeled/sa.svg"
+        items:
+          - label: "ServiceAccounts"
+            route: "serviceaccounts"
+          - label: "Roles"
+            route: "rbac.authorization.k8s.io/roles"
+          - label: "RoleBindings"
+            route: "rbac.authorization.k8s.io/rolebindings"
+          - label: "ClusterRoles"
+            route: "rbac.authorization.k8s.io/clusterroles"
+          - label: "ClusterRoleBindings"
+            route: "rbac.authorization.k8s.io/clusterrolebindings"
+      - label: "FluxCD"
+        icon: "https://raw.githubusercontent.com/fluxcd/website/refs/heads/main/assets/icons/logo.svg"
+        items:
+          - label: "HelmReleases"
+            route: "helm.toolkit.fluxcd.io/helmreleases"
+          - label: "HelmCharts"
+            route: "source.toolkit.fluxcd.io/helmcharts"
+          - label: "HelmRepositories"
+            route: "source.toolkit.fluxcd.io/helmrepositories"
+          - label: "Kustomizations"
+            route: "kustomize.toolkit.fluxcd.io/kustomizations"
+          - label: "GitRepositories"
+            route: "source.toolkit.fluxcd.io/gitrepositories"
+      - label: "External Secrets"
+        icon: "984363"
+        items:
+          - label: "External Secrets"
+            route: "external-secrets.io/externalsecrets"
+          - label: "Cluster External Secrets"
+            route: "external-secrets.io/clusterexternalsecrets"
+          - label: "Push Secrets"
+            route: "external-secrets.io/pushsecrets"
+          - label: "Secret Stores"
+            route: "external-secrets.io/secretstores"
+          - label: "Cluster Secret Stores"
+            route: "external-secrets.io/clustersecretstores"
+      - label: "Homer"
+        icon: "https://raw.githubusercontent.com/bastienwirtz/homer/refs/heads/main/public/assets/icons/logo.svg"
+        items:
+          - label: "Homer Services"
+            route: "homer.bananaops.io/homerservices"
+      - label: "Velero"
+        icon: "58704"
+        items:
+          - label: "Schedules"
+            route: "velero.io/schedules"
+          - label: "Backups"
+            route: "velero.io/backups"
+      - label: "Chaos Mesh"
+        icon: "https://raw.githubusercontent.com/chaos-mesh/chaos-mesh/refs/heads/master/ui/app/src/images/logo-mini.svg"
+        items:
+          - label: "Physical Machines"
+            route: "chaos-mesh.org/physicalmachines"
+          - label: "AWS Chaos"
+            route: "chaos-mesh.org/awschaos"
+          - label: "Network Chaos"
+            route: "chaos-mesh.org/networkchaos"
+          - label: "Status Checks"
+            route: "chaos-mesh.org/statuschecks"
+          - label: "Kernel Chaos"
+            route: "chaos-mesh.org/kernelchaos"
+          - label: "JVM Chaos"
+            route: "chaos-mesh.org/jvmchaos"
+          - label: "Workflow Nodes"
+            route: "chaos-mesh.org/workflownodes"
+          - label: "I/O Chaos"
+            route: "chaos-mesh.org/iochaos"
+          - label: "Pod I/O Chaos"
+            route: "chaos-mesh.org/podiochaos"
+          - label: "Pod Network Chaos"
+            route: "chaos-mesh.org/podnetworkchaos"
+          - label: "Physical Machine Chaos"
+            route: "chaos-mesh.org/physicalmachinechaos"
+          - label: "HTTP Chaos"
+            route: "chaos-mesh.org/httpchaos"
+          - label: "Time Chaos"
+            route: "chaos-mesh.org/timechaos"
+          - label: "Stress Chaos"
+            route: "chaos-mesh.org/stresschaos"
+          - label: "DNS Chaos"
+            route: "chaos-mesh.org/dnschaos"
+          - label: "Pod HTTP Chaos"
+            route: "chaos-mesh.org/podhttpchaos"
+          - label: "Workflows"
+            route: "chaos-mesh.org/workflows"
+          - label: "Block Chaos"
+            route: "chaos-mesh.org/blockchaos"
+          - label: "Schedules"
+            route: "chaos-mesh.org/schedules"
+      - label: "Namespace"
+        icon: "https://raw.githubusercontent.com/kubernetes/community/refs/heads/master/icons/svg/resources/unlabeled/ns.svg"
+        route: "namespaces"
+      - label: "Event"
+        icon: "57918"
+        route: "events"
+      - label: "Customization"
+        icon: "57778"
+        items:
+          - label: "Customization"
+            route: "schwifty.pewty.fr/customizations"
+          - label: "GetView"
+            route: "schwifty.pewty.fr/getviews"
+          - label: "Action"
+            route: "schwifty.pewty.fr/actions"
+          - label: "Navigation"
+            route: "schwifty.pewty.fr/navigations"
+          - label: "ListView"
+            route: "schwifty.pewty.fr/listviews"
+  dev:
+    other:
+      enabled: false
+    items:
+      - label: "Workload"
+        icon: "https://raw.githubusercontent.com/kubernetes/community/refs/heads/master/icons/svg/resources/unlabeled/pod.svg"
+        items:
+          - label: "Pods"
+            route: "pods"
+          - label: "Deployments"
+            route: "apps/deployments"
+          - label: "StatefulSets"
+            route: "apps/statefulsets"
+          - label: "DaemonSets"
+            route: "apps/daemonsets"
+          - label: "ReplicaSets"
+            route: "apps/replicasets"
+          - label: "ReplicationController"
+            route: "replicationcontrollers"
+          - label: "Jobs"
+            route: "batch/jobs"
+          - label: "CronJobs"
+            route: "batch/cronjobs"
+      - label: "Config"
+        icon: "https://raw.githubusercontent.com/kubernetes/community/refs/heads/master/icons/svg/resources/unlabeled/cm.svg"
+        items:
+          - label: "ConfigMaps"
+            route: "configmaps"
+          - label: "Secrets"
+            route: "secrets"
+          - label: "ResourceQuotas"
+            route: "resourcequotas"
+          - label: "LimitRanges"
+            route: "limitranges"
+          - label: "HorizontalPodAutoscalers"
+            route: "autoscaling/horizontalpodautoscalers"
+          - label: "PodDisruptionBudgets"
+            route: "policy/poddisruptionbudgets"
+      - label: "Network"
+        icon: "https://raw.githubusercontent.com/kubernetes/community/refs/heads/master/icons/svg/resources/unlabeled/svc.svg"
+        items:
+          - label: "Services"
+            route: "services"
+          - label: "Ingresses"
+            route: "networking.k8s.io/ingresses"
+      - label: "Storage"
+        icon: "https://raw.githubusercontent.com/kubernetes/community/refs/heads/master/icons/svg/resources/unlabeled/pvc.svg"
+        items:
+          - label: "PersistentVolumeClaims"
+            route: "persistentvolumeclaims"
+          - label: "PersistentVolumes"
+            route: "persistentvolumes"
+      - label: "FluxCD"
+        icon: "https://raw.githubusercontent.com/fluxcd/website/refs/heads/main/assets/icons/logo.svg"
+        items:
+          - label: "HelmReleases"
+            route: "helm.toolkit.fluxcd.io/helmreleases"
+          - label: "Kustomizations"
+            route: "kustomize.toolkit.fluxcd.io/kustomizations"
+      - label: "External Secrets"
+        icon: "https://raw.githubusercontent.com/external-secrets/external-secrets/refs/heads/main/docs/pictures/eso-round-logo.svg"
+        items:
+          - label: "External Secrets"
+            route: "external-secrets.io/externalsecrets"
+          - label: "Push Secrets"
+            route: "external-secrets.io/pushsecrets"
+      - label: "Homer"
+        icon: "https://raw.githubusercontent.com/bastienwirtz/homer/refs/heads/main/public/assets/icons/logo.svg"
+        items:
+          - label: "Homer Services"
+            route: "homer.bananaops.io/homerservices"
+      - label: "Event"
+        icon: "57918"
+        route: "events"
+  support:
+    other:
+      enabled: false
+    items:
+      - label: "Workload"
+        icon: "https://raw.githubusercontent.com/kubernetes/community/refs/heads/master/icons/svg/resources/unlabeled/pod.svg"
+        items:
+          - label: "Pods"
+            route: "pods"
+          - label: "Deployments"
+            route: "apps/deployments"
+          - label: "StatefulSets"
+            route: "apps/statefulsets"
+          - label: "DaemonSets"
+            route: "apps/daemonsets"
+      - label: "FluxCD"
+        icon: "https://raw.githubusercontent.com/fluxcd/website/refs/heads/main/assets/icons/logo.svg"
+        items:
+          - label: "HelmReleases"
+            route: "helm.toolkit.fluxcd.io/helmreleases"
+      - label: "Event"
+        icon: "57918"
+        route: "events"
+
+listViews:
+  default:
+    - include:
+        - nodes
+      exclude:
+        - "*"
+      items:
+        - label: "Name"
+          key: "$.metadata.name"
+          width: 3
+        - label: "Ready"
+          key: '$.status.conditions[?(@.type=="Ready")].status'
+        - label: "Age"
+          key: "$.metadata.creationTimestamp"
+          type: duration
+        - label: Version
+          key: "$.status.nodeInfo.kubeletVersion"
+          width: 2
+    - include:
+        - pods
+      exclude:
+        - "*"
+      items:
+        - label: "Name"
+          key: "$.metadata.name"
+          width: 4
+        - label: "Status"
+          key: "$.status.phase"
+          type: "badge"
+          width: 1
+        - label: "Age"
+          key: "$.metadata.creationTimestamp"
+          type: duration
+        - label: "Node"
+          key: "$.spec.nodeName"
+          width: 5
+        - label: "Namespace"
+          key: "$.metadata.namespace"
+          width: 3
+    - include:
+        - apps/deployments
+      exclude:
+        - "*"
+      items:
+        - label: "Name"
+          key: "$.metadata.name"
+          width: 4
+        - label: "Current"
+          key: "$.status.replicas"
+        - label: "Desired"
+          key: "$.spec.replicas"
+        - label: "Age"
+          key: "$.metadata.creationTimestamp"
+          type: duration
+    - include:
+        - helm.toolkit.fluxcd.io/helmreleases
+      exclude:
+        - "*"
+      items:
+        - label: "Name"
+          key: "$.metadata.name"
+          width: 4
+        - label: "Age"
+          key: "$.metadata.creationTimestamp"
+          type: duration
+        - label: "Ready"
+          key: '$.status.conditions[?(@.type=="Ready")].status'
+    - include:
+        - source.toolkit.fluxcd.io/helmcharts
+      exclude:
+        - "*"
+      items:
+        - label: "Name"
+          key: "$.metadata.name"
+          width: 4
+        - label: "Chart"
+          key: "$.spec.chart"
+          width: 3
+        - label: "Version"
+          key: "$.spec.version"
+        - label: "Age"
+          key: "$.metadata.creationTimestamp"
+          type: duration
+        - label: "Ready"
+          key: '$.status.conditions[?(@.type=="Ready")].status'
+    - include:
+        - source.toolkit.fluxcd.io/helmrepositories
+      exclude:
+        - "*"
+      items:
+        - label: "Name"
+          key: "$.metadata.name"
+          width: 2
+        - label: "URL"
+          key: "$.spec.url"
+          width: 4
+        - label: "Age"
+          key: "$.metadata.creationTimestamp"
+          type: duration
+        - label: "Ready"
+          key: '$.status.conditions[?(@.type=="Ready")].status'
+    - include:
+        - kustomize.toolkit.fluxcd.io/kustomizations
+      exclude:
+        - "*"
+      items:
+        - label: "Name"
+          key: "$.metadata.name"
+          width: 4
+        - label: "Age"
+          key: "$.metadata.creationTimestamp"
+          type: duration
+        - label: "Ready"
+          key: '$.status.conditions[?(@.type=="Ready")].status'
+    - include:
+        - source.toolkit.fluxcd.io/gitrepositories
+      exclude:
+        - "*"
+      items:
+        - label: "Name"
+          key: "$.metadata.name"
+          width: 2
+        - label: "URL"
+          key: "$.spec.url"
+          width: 4
+        - label: "Age"
+          key: "$.metadata.creationTimestamp"
+          type: duration
+        - label: "Ready"
+          key: '$.status.conditions[?(@.type=="Ready")].status'
+
+getViews:
+  default:
+    - include:
+        - "*"
+      exclude: []
+      items:
+        - label: "Metadata"
+          key: "$.metadata"
+        - label: "Spec"
+          key: "$.spec"
+        - label: "Status"
+          key: "$.status"
+    - include:
+        - configmaps
+      exclude:
+        - "*"
+      items:
+        - label: "Metadata"
+          key: "$.metadata"
+        - label: "Data"
+          key: "$.data"
+    - include:
+        - secrets
+      exclude:
+        - "*"
+      items:
+        - label: "Metadata"
+          key: "$.metadata"
+        - label: "Data"
+          key: "$.data"
+
+users:
+  - username: "admin"
+    password: "8b7dc261075761e519143ccd1cf56e6d58961089bf523326a30b4cde0bcaf529"
+    groups:
+      - "schwifty-admin-users"
+  - username: "dev"
+    password: "8b7dc261075761e519143ccd1cf56e6d58961089bf523326a30b4cde0bcaf529"
+    groups:
+      - "schwifty-dev-users"
+  - username: "support"
+    password: "8b7dc261075761e519143ccd1cf56e6d58961089bf523326a30b4cde0bcaf529"
+    groups:
+      - "schwifty-support-users"
+
+config:
+  logLevel: info
+  originUrl: "https://app.schwifty.fr"
+  portforwardUrl: "https://portforward.example.com"
+  api:
+    customization:
+      enabled: true
+      namespace: "{{ .Release.Namespace}}"
+    discovery:
+      enabled: true
+      clusters:
+        - name: "my-prod-cluster"
+          mainUrl: "https://api.example.com"
+          portforwardUrl: "{{ .Values.config.portforwardUrl }}"
+          customizationRef: "{{ (index .Values.config.api.discovery.clusters 0).name }}"
+          authenticationRef: "{{ (index .Values.config.api.discovery.clusters 0).name }}"
+          discoveryRef: "{{ (index .Values.config.api.discovery.clusters 0).name }}"
+        - name: "my-staging-cluster"
+          mainUrl: "https://api.staging.example.com"
+          portforwardUrl: "https://portforward.staging.example.com"
+          customizationRef: "{{ (index .Values.config.api.discovery.clusters 0).name }}"
+          authenticationRef: "{{ (index .Values.config.api.discovery.clusters 0).name }}"
+          discoveryRef: "{{ (index .Values.config.api.discovery.clusters 0).name }}"
+    authentication:
+      noAuth:
+        enabled: false
+        groups: []
+      basic:
+        enabled: true
+        salt: "Aingeithoo9lainaitixes5Jaid7te"
+        secretRef:
+          name: "schwifty-basic-auth"
+          namespace: "{{ .Release.Namespace}}"
+      externalOidc:
+        enabled: false
+        oidc:
+          clientId: "oidc-client-id"
+          clientSecret: "oidc"
+          issuerUrl: "https://oidc-issuer-url"
+          redirectUrl: "https://app.schwifty.fr/discovery"
+          groupsClaim: "cognito:groups"
+          usernameClaim: "cognito:username"
+          groupsPrefix: "schwifty-"
+      kubernetesOidc:
+        enabled: false
+        oidc:
+          clientId: "oidc-client-id"
+          clientSecret: "oidc"
+          issuerUrl: "https://oidc-issuer-url"
+          redirectUrl: "https://app.schwifty.fr/discovery"
+          groupsClaim: "cognito:groups"
+          usernameClaim: "cognito:username"
+          groupsPrefix: "schwifty-"
+  port:
+    api: 16666
+    portforward: 16667

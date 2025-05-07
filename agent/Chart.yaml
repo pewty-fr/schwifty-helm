@@ -1,0 +1,6 @@
+apiVersion: v2
+name: agent
+description: CRD and Agent for the Schwifty app
+type: application
+version: 0.0.1
+appVersion: "v1.0.0"
