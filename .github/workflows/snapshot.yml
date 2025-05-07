@@ -1,0 +1,108 @@
+---
+name: Snapshot
+
+#############
+## In PR, add comment `/snapshot` to trigger this workflow
+## If build succeed, it will add reaction :hooray:
+## If build failed, it will add reaction :confused:
+#############
+
+on:
+  issue_comment:
+    types:
+      - created
+      - edited
+
+jobs:
+  snapshot-web:
+    runs-on: ubuntu-latest
+    if: github.event.issue.pull_request && startsWith(github.event.comment.body, '/snapshot web')
+    steps:
+      - uses: xt0rted/pull-request-comment-branch@v2
+        id: comment_branch
+        if: success()
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.comment_branch.outputs.head_ref }}
+      - name: Update comment
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ github.event.comment.id }}
+          reactions: rocket
+      - run: |
+          echo "version=$(echo -n '${{ github.event.comment.body }}' | sed 's/\/snapshot web //g')" >> "$GITHUB_OUTPUT"
+        id: vars
+      - uses: azure/setup-helm@v3
+        with:
+          version: latest
+          token: ${{ secrets.GITHUB_TOKEN }} # only needed if version is 'latest'
+      - name: Log in to Harbor
+        uses: docker/login-action@v2
+        with:
+          registry: 69b10931.c1.gra9.container-registry.ovh.net
+          username: ${{ secrets.HARBOR_USER }}
+          password: ${{ secrets.HARBOR_PASSWORD }}
+      - name: Package and push helm chart to Amazon ECR
+        id: build
+        run: |
+          helm package ${{ inputs.chart-path }} --version ${{ steps.vars.outputs.version }}
+          helm push ${{ inputs.chart-name }}-${{ steps.vars.outputs.version }}.tgz oci://69b10931.c1.gra9.container-registry.ovh.net/schwifty-public/chart/web
+      - name: Update comment
+        if: ${{ always() && steps.build.conclusion == 'success' }}
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ github.event.comment.id }}
+          body: "69b10931.c1.gra9.container-registry.ovh.net/schwifty-public/chart/web:${{ steps.vars.outputs.version }}"
+          reactions: hooray
+      - name: Update comment
+        if: ${{ always() && steps.build.conclusion == 'failure' }}
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ github.event.comment.id }}
+          reactions: confused
+  snapshot-agent:
+    runs-on: ubuntu-latest
+    if: github.event.issue.pull_request && startsWith(github.event.comment.body, '/snapshot agent'))
+    steps:
+      - uses: xt0rted/pull-request-comment-branch@v2
+        id: comment_branch
+        if: success()
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.comment_branch.outputs.head_ref }}
+      - name: Update comment
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ github.event.comment.id }}
+          reactions: rocket
+      - run: |
+          echo "version=$(echo -n '${{ github.event.comment.body }}' | sed 's/\/snapshot agent //g')" >> "$GITHUB_OUTPUT"
+        id: vars
+      - uses: azure/setup-helm@v3
+        with:
+          version: latest
+          token: ${{ secrets.GITHUB_TOKEN }} # only needed if version is 'latest'
+      - name: Log in to Harbor
+        uses: docker/login-action@v2
+        with:
+          registry: 69b10931.c1.gra9.container-registry.ovh.net
+          username: ${{ secrets.HARBOR_USER }}
+          password: ${{ secrets.HARBOR_PASSWORD }}
+      - name: Package and push helm chart to Amazon ECR
+        id: build
+        run: |
+          helm package ${{ inputs.chart-path }} --version ${{ steps.vars.outputs.version }}
+          helm push ${{ inputs.chart-name }}-${{ steps.vars.outputs.version }}.tgz oci://69b10931.c1.gra9.container-registry.ovh.net/schwifty-public/chart/agent
+      - name: Update comment
+        if: ${{ always() && steps.build.conclusion == 'success' }}
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ github.event.comment.id }}
+          body: "69b10931.c1.gra9.container-registry.ovh.net/schwifty-public/chart/agent:${{ steps.vars.outputs.version }}"
+          reactions: hooray
+      - name: Update comment
+        if: ${{ always() && steps.build.conclusion == 'failure' }}
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ github.event.comment.id }}
+          reactions: confused
