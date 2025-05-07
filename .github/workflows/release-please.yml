@@ -14,7 +14,7 @@ permissions:
 
 jobs:
   release-please:
-    runs-on: gha-private-runners
+    runs-on: ubuntu-latest
     outputs:
       paths_released: ${{ steps.release-please.outputs.paths_released }}
       releases_created: ${{ steps.release-please.outputs.releases_created }}
