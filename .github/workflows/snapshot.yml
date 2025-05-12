@@ -62,7 +62,7 @@ jobs:
           reactions: confused
   snapshot-agent:
     runs-on: ubuntu-latest
-    if: github.event.issue.pull_request && startsWith(github.event.comment.body, '/snapshot agent'))
+    if: github.event.issue.pull_request && startsWith(github.event.comment.body, '/snapshot agent')
     steps:
       - uses: xt0rted/pull-request-comment-branch@v2
         id: comment_branch
