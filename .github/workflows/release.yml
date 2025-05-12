@@ -29,7 +29,7 @@ jobs:
         id: build
         run: |
           helm package ./web/ --version ${{ steps.vars.outputs.version }}
-          helm push web-${{ steps.vars.outputs.version }}.tgz oci://69b10931.c1.gra9.container-registry.ovh.net/schwifty-public/chart/web
+          helm push web-${{ steps.vars.outputs.version }}.tgz oci://69b10931.c1.gra9.container-registry.ovh.net/schwifty-public/chart
       - name: Update release
         if: ${{ steps.build.conclusion == 'success' }}
         uses: tubone24/update_release@v1.0
@@ -60,7 +60,7 @@ jobs:
         id: build
         run: |
           helm package ./agent/ --version ${{ steps.vars.outputs.version }}
-          helm push agent-${{ steps.vars.outputs.version }}.tgz oci://69b10931.c1.gra9.container-registry.ovh.net/schwifty-public/chart/agent
+          helm push agent-${{ steps.vars.outputs.version }}.tgz oci://69b10931.c1.gra9.container-registry.ovh.net/schwifty-public/chart
       - name: Update release
         if: ${{ steps.build.conclusion == 'success' }}
         uses: tubone24/update_release@v1.0
