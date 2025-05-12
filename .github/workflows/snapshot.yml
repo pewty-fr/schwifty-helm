@@ -45,8 +45,8 @@ jobs:
       - name: Package and push helm chart to Amazon ECR
         id: build
         run: |
-          helm package ${{ inputs.chart-path }} --version ${{ steps.vars.outputs.version }}
-          helm push ${{ inputs.chart-name }}-${{ steps.vars.outputs.version }}.tgz oci://69b10931.c1.gra9.container-registry.ovh.net/schwifty-public/chart/web
+          helm package ./web/ --version ${{ steps.vars.outputs.version }}
+          helm push web-${{ steps.vars.outputs.version }}.tgz oci://69b10931.c1.gra9.container-registry.ovh.net/schwifty-public/chart
       - name: Update comment
         if: ${{ always() && steps.build.conclusion == 'success' }}
         uses: peter-evans/create-or-update-comment@v4
@@ -62,7 +62,7 @@ jobs:
           reactions: confused
   snapshot-agent:
     runs-on: ubuntu-latest
-    if: github.event.issue.pull_request && startsWith(github.event.comment.body, '/snapshot agent'))
+    if: github.event.issue.pull_request && startsWith(github.event.comment.body, '/snapshot agent')
     steps:
       - uses: xt0rted/pull-request-comment-branch@v2
         id: comment_branch
@@ -91,8 +91,8 @@ jobs:
       - name: Package and push helm chart to Amazon ECR
         id: build
         run: |
-          helm package ${{ inputs.chart-path }} --version ${{ steps.vars.outputs.version }}
-          helm push ${{ inputs.chart-name }}-${{ steps.vars.outputs.version }}.tgz oci://69b10931.c1.gra9.container-registry.ovh.net/schwifty-public/chart/agent
+          helm package ./agent/ --version ${{ steps.vars.outputs.version }}
+          helm push agent-${{ steps.vars.outputs.version }}.tgz oci://69b10931.c1.gra9.container-registry.ovh.net/schwifty-public/chart
       - name: Update comment
         if: ${{ always() && steps.build.conclusion == 'success' }}
         uses: peter-evans/create-or-update-comment@v4
