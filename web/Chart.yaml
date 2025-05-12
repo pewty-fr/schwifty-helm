@@ -2,5 +2,5 @@ apiVersion: v2
 name: web
 description: Web for Schwifty app
 type: application
-version: 0.0.1
+version: 1.0.0
 appVersion: "v1.1.2"
