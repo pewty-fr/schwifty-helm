@@ -67,4 +67,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
-          body: oci://69b10931.c1.gra9.container-registry.ovh.net/schwifty-public/chart/agent:${{ steps.vars.outputs.version }}
+          is_append_body: true
+          body: |
+            ---
+            url: oci://69b10931.c1.gra9.container-registry.ovh.net/schwifty-public/chart/agent:${{ steps.vars.outputs.version }}
+            ---
