@@ -1,6 +1,6 @@
 # web
 
-![Version: 1.0.2](https://img.shields.io/badge/Version-1.0.2-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: v1.1.2](https://img.shields.io/badge/AppVersion-v1.1.2-informational?style=flat-square)
+![Version: 1.0.3](https://img.shields.io/badge/Version-1.0.3-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: v1.1.2](https://img.shields.io/badge/AppVersion-v1.1.2-informational?style=flat-square)
 
 Web for Schwifty app
 
@@ -25,7 +25,7 @@ Web for Schwifty app
 | podSecurityContext | object | `{}` |  |
 | securityContext | object | `{}` |  |
 | service.type | string | `"ClusterIP"` |  |
-| service.port | int | `80` |  |
+| service.port | int | `8090` |  |
 | ingress.enabled | bool | `false` |  |
 | ingress.className | string | `""` |  |
 | ingress.annotations | object | `{}` |  |
