@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.3](https://github.com/pewty-fr/schwifty-helm/compare/web/v1.0.2...web/v1.0.3) (2025-05-15)
+
+
+### Bug Fixes
+
+* **web:** service port ([dbbec50](https://github.com/pewty-fr/schwifty-helm/commit/dbbec50455cdb1cceecc724c8385beb6fbd0fc42))
+
 ## [1.0.2](https://github.com/pewty-fr/schwifty-helm/compare/web/v1.0.1...web/v1.0.2) (2025-05-15)
 
 
