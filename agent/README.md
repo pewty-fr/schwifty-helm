@@ -13,7 +13,7 @@ CRD and Agent for the Schwifty app
 | image.repository | string | `"69b10931.c1.gra9.container-registry.ovh.net/schwifty-public"` |  |
 | image.name | string | `"agent"` |  |
 | image.pullPolicy | string | `"IfNotPresent"` |  |
-| image.tag | string | `"v1.0.0"` |  |
+| image.tag | string | `"v1.1.0"` |  |
 | env | list | `[]` |  |
 | serviceAccount | object | `{"annotations":{},"enabled":true,"name":"schwifty-back"}` | https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/ |
 | podAnnotations.checksum/config | string | `"{{ toYaml $.Values.config | sha256sum }}"` |  |
