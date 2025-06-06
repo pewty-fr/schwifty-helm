@@ -608,7 +608,7 @@ CRD and Agent for the Schwifty app
 | config.api.authentication.externalOidc.oidc.clientId | string | `"oidc-client-id"` |  |
 | config.api.authentication.externalOidc.oidc.clientSecret | string | `"oidc"` |  |
 | config.api.authentication.externalOidc.oidc.issuerUrl | string | `"https://oidc-issuer-url"` |  |
-| config.api.authentication.externalOidc.oidc.redirectUrl | string | `"https://app.schwifty.fr/discovery"` |  |
+| config.api.authentication.externalOidc.oidc.redirectUrl | string | `"https://app.schwifty.fr/login/oidc"` |  |
 | config.api.authentication.externalOidc.oidc.groupsClaim | string | `"cognito:groups"` |  |
 | config.api.authentication.externalOidc.oidc.usernameClaim | string | `"cognito:username"` |  |
 | config.api.authentication.externalOidc.oidc.groupsPrefix | string | `"schwifty-"` |  |
@@ -616,7 +616,7 @@ CRD and Agent for the Schwifty app
 | config.api.authentication.kubernetesOidc.oidc.clientId | string | `"oidc-client-id"` |  |
 | config.api.authentication.kubernetesOidc.oidc.clientSecret | string | `"oidc"` |  |
 | config.api.authentication.kubernetesOidc.oidc.issuerUrl | string | `"https://oidc-issuer-url"` |  |
-| config.api.authentication.kubernetesOidc.oidc.redirectUrl | string | `"https://app.schwifty.fr/discovery"` |  |
+| config.api.authentication.kubernetesOidc.oidc.redirectUrl | string | `"https://app.schwifty.fr/login/oidc"` |  |
 | config.api.authentication.kubernetesOidc.oidc.groupsClaim | string | `"cognito:groups"` |  |
 | config.api.authentication.kubernetesOidc.oidc.usernameClaim | string | `"cognito:username"` |  |
 | config.api.authentication.kubernetesOidc.oidc.groupsPrefix | string | `"schwifty-"` |  |
