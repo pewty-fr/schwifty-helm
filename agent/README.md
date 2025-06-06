@@ -15,7 +15,7 @@ CRD and Agent for the Schwifty app
 | image.pullPolicy | string | `"IfNotPresent"` |  |
 | image.tag | string | `"v1.2.0"` |  |
 | env | list | `[]` |  |
-| serviceAccount | object | `{"annotations":{},"enabled":true,"name":"schwifty-back"}` | https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/ |
+| serviceAccount | object | `{"annotations":{},"enabled":true,"name":"agent"}` | https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/ |
 | podAnnotations.checksum/config | string | `"{{ toYaml $.Values.config | sha256sum }}"` |  |
 | podSecurityContext | object | `{"fsGroup":1000}` | https://kubernetes.io/docs/tasks/configure-pod-container/security-context/ |
 | securityContext | object | `{"capabilities":{"drop":["ALL"]},"runAsNonRoot":true,"runAsUser":1000}` | https://kubernetes.io/docs/tasks/configure-pod-container/security-context/ |
