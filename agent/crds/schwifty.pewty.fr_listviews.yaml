@@ -61,12 +61,13 @@ spec:
                         type: string
                       priority:
                         type: integer
+                      template:
+                        type: string
                       type:
                         type: string
                       width:
                         type: integer
                     required:
-                    - key
                     - label
                     type: object
                   type: array

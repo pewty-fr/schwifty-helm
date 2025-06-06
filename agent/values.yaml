@@ -7,7 +7,7 @@ image:
   name: "agent"
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "v1.1.0"
+  tag: "v1.2.0"
 
 env: []
 
@@ -552,7 +552,7 @@ navigations:
           - label: "Kustomizations"
             route: "kustomize.toolkit.fluxcd.io/kustomizations"
       - label: "External Secrets"
-        icon: "https://raw.githubusercontent.com/external-secrets/external-secrets/refs/heads/main/docs/pictures/eso-round-logo.svg"
+        icon: "984363"
         items:
           - label: "External Secrets"
             route: "external-secrets.io/externalsecrets"
@@ -592,134 +592,194 @@ navigations:
 
 listViews:
   default:
-    - include:
+    - exclude:
+        - '*'
+      include:
         - nodes
-      exclude:
-        - "*"
       items:
-        - label: "Name"
-          key: "$.metadata.name"
+        - label: Name
+          template: '{{metadata.name}}'
           width: 3
-        - label: "Ready"
-          key: '$.status.conditions[?(@.type=="Ready")].status'
-        - label: "Age"
-          key: "$.metadata.creationTimestamp"
+        - label: Metrics
+          type: nodeMetrics
+        - label: Ready
+          template: >-
+            {{#ty_jsonpath}}$.status.conditions[?(@.type=="Ready")].status{{/ty_jsonpath}}
+        - label: Age
+          template: '{{metadata.creationTimestamp}}'
           type: duration
         - label: Version
-          key: "$.status.nodeInfo.kubeletVersion"
+          template: '{{status.nodeInfo.kubeletVersion}}'
           width: 2
-    - include:
+    - exclude:
+        - '*'
+      include:
         - pods
-      exclude:
-        - "*"
       items:
-        - label: "Name"
-          key: "$.metadata.name"
-          width: 4
-        - label: "Status"
-          key: "$.status.phase"
-          type: "badge"
+        - label: Name
+          priority: 0
+          template: '{{metadata.name}}'
+          width: 3
+        - label: Metrics
+          priority: 0
+          type: podMetrics
           width: 1
-        - label: "Age"
-          key: "$.metadata.creationTimestamp"
+        - label: Containers
+          priority: 0
+          template: >-
+            {{#ty_jsonpath}}$.status..['containerStatuses','initContainerStatuses'].*.state{{/ty_jsonpath}}
+          type: containerStatus
+          width: 1
+        - label: Status
+          priority: 1
+          template: '{{status.phase}}'
+          type: badge
+          width: 1
+        - label: Age
+          priority: 1
+          template: '{{metadata.creationTimestamp}}'
           type: duration
-        - label: "Node"
-          key: "$.spec.nodeName"
-          width: 5
-        - label: "Namespace"
-          key: "$.metadata.namespace"
-          width: 3
-    - include:
+        - label: Node
+          template: /resource/-/nodes/-/{{spec.nodeName}}
+          type: link
+        - label: Namespace
+          priority: 1
+          template: '{{metadata.namespace}}'
+          width: 2
+    - exclude:
+        - '*'
+      include:
         - apps/deployments
-      exclude:
-        - "*"
       items:
-        - label: "Name"
-          key: "$.metadata.name"
+        - label: Name
+          template: '{{metadata.name}}'
           width: 4
-        - label: "Current"
-          key: "$.status.replicas"
-        - label: "Desired"
-          key: "$.spec.replicas"
-        - label: "Age"
-          key: "$.metadata.creationTimestamp"
+        - label: Ready
+          template: '{{status.replicas}} / {{spec.replicas}}'
+        - label: Age
+          template: '{{metadata.creationTimestamp}}'
           type: duration
-    - include:
+    - exclude:
+        - '*'
+      include:
         - helm.toolkit.fluxcd.io/helmreleases
-      exclude:
-        - "*"
       items:
-        - label: "Name"
-          key: "$.metadata.name"
+        - label: Name
+          template: '{{metadata.name}}'
           width: 4
-        - label: "Age"
-          key: "$.metadata.creationTimestamp"
+        - label: Age
+          template: '{{metadata.creationTimestamp}}'
           type: duration
-        - label: "Ready"
-          key: '$.status.conditions[?(@.type=="Ready")].status'
-    - include:
+        - label: Ready
+          template: >-
+            {{#ty_jsonpath}}$.status.conditions[?(@.type=="Ready")].status{{/ty_jsonpath}}
+        - label: Last Successful Update
+          template: >-
+            {{#ty_jsonpath}}$.status.conditions[?(@.type=="Ready")].lastTransitionTime{{/ty_jsonpath}}
+          type: duration
+    - exclude:
+        - '*'
+      include:
         - source.toolkit.fluxcd.io/helmcharts
-      exclude:
-        - "*"
       items:
-        - label: "Name"
-          key: "$.metadata.name"
+        - label: Name
+          template: '{{metadata.name}}'
           width: 4
-        - label: "Chart"
-          key: "$.spec.chart"
+        - label: Chart
+          template: '{{spec.chart}}'
           width: 3
-        - label: "Version"
-          key: "$.spec.version"
-        - label: "Age"
-          key: "$.metadata.creationTimestamp"
+        - label: Version
+          template: '{{spec.version}}'
+        - label: Age
+          template: '{{metadata.creationTimestamp}}'
           type: duration
-        - label: "Ready"
-          key: '$.status.conditions[?(@.type=="Ready")].status'
-    - include:
+        - label: Ready
+          template: >-
+            {{#ty_jsonpath}}$.status.conditions[?(@.type=="Ready")].status{{/ty_jsonpath}}
+        - label: Last Pull
+          template: >-
+            {{#ty_jsonpath}}$.status.conditions[?(@.type=="Ready")].lastTransitionTime{{/ty_jsonpath}}
+          type: duration
+    - exclude:
+        - '*'
+      include:
         - source.toolkit.fluxcd.io/helmrepositories
-      exclude:
-        - "*"
       items:
-        - label: "Name"
-          key: "$.metadata.name"
+        - label: Name
+          template: '{{metadata.name}}'
           width: 2
-        - label: "URL"
-          key: "$.spec.url"
+        - label: URL
+          template: '{{spec.url}}'
           width: 4
-        - label: "Age"
-          key: "$.metadata.creationTimestamp"
+        - label: Age
+          template: '{{metadata.creationTimestamp}}'
           type: duration
-        - label: "Ready"
-          key: '$.status.conditions[?(@.type=="Ready")].status'
-    - include:
+        - label: Ready
+          template: >-
+            {{#ty_jsonpath}}$.status.conditions[?(@.type=="Ready")].status{{/ty_jsonpath}}
+    - exclude:
+        - '*'
+      include:
         - kustomize.toolkit.fluxcd.io/kustomizations
-      exclude:
-        - "*"
       items:
-        - label: "Name"
-          key: "$.metadata.name"
+        - label: Name
+          template: '{{metadata.name}}'
           width: 4
-        - label: "Age"
-          key: "$.metadata.creationTimestamp"
+        - label: Age
+          template: '{{metadata.creationTimestamp}}'
           type: duration
-        - label: "Ready"
-          key: '$.status.conditions[?(@.type=="Ready")].status'
-    - include:
+        - label: Ready
+          template: >-
+            {{#ty_jsonpath}}$.status.conditions[?(@.type=="Ready")].status{{/ty_jsonpath}}
+        - label: Last Successful Update
+          template: >-
+            {{#ty_jsonpath}}$.status.conditions[?(@.type=="Ready")].lastTransitionTime{{/ty_jsonpath}}
+          type: duration
+    - exclude:
+        - '*'
+      include:
         - source.toolkit.fluxcd.io/gitrepositories
-      exclude:
-        - "*"
       items:
-        - label: "Name"
-          key: "$.metadata.name"
+        - label: Name
+          template: '{{metadata.name}}'
           width: 2
-        - label: "URL"
-          key: "$.spec.url"
+        - label: URL
+          template: '{{spec.url}}'
           width: 4
-        - label: "Age"
-          key: "$.metadata.creationTimestamp"
+        - label: Branch
+          template: '{{spec.ref.branch}}'
+          width: 2
+        - label: Age
+          template: '{{metadata.creationTimestamp}}'
           type: duration
-        - label: "Ready"
-          key: '$.status.conditions[?(@.type=="Ready")].status'
+        - label: Ready
+          template: >-
+            {{#ty_jsonpath}}$.status.conditions[?(@.type=="Ready")].status{{/ty_jsonpath}}
+        - label: Last Successful Update
+          template: >-
+            {{#ty_jsonpath}}$.status.conditions[?(@.type=="Ready")].lastTransitionTime{{/ty_jsonpath}}
+          type: duration
+    - exclude:
+        - '*'
+      include:
+        - karpenter.sh/nodepools
+      items:
+        - label: Name
+          template: '{{metadata.name}}'
+        - label: NodeClass
+          template: '{{spec.template.spec.nodeClassRef.name}}'
+        - label: Nodes
+          template: '{{status.resources.nodes}}'
+        - label: Pods
+          template: '{{status.resources.pods}}'
+        - label: CPU Limits
+          template: >-
+            {{#ty_cpu}}{{status.resources.cpu}}{{/ty_cpu}}/{{#ty_cpu}}{{spec.limits.cpu}}{{/ty_cpu}}
+          type: percentageBar
+        - label: Memory Limits
+          template: >-
+            {{#ty_memory}}{{status.resources.memory}}{{/ty_memory}}/{{#ty_memory}}{{spec.limits.memory}}{{/ty_memory}}
+          type: percentageBar
 
 getViews:
   default:
