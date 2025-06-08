@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.2](https://github.com/pewty-fr/schwifty-helm/compare/agent/v1.0.1...agent/v1.0.2) (2025-06-08)
+
+
+### Bug Fixes
+
+* use latest agent & web ([#8](https://github.com/pewty-fr/schwifty-helm/issues/8)) ([ee4b5f6](https://github.com/pewty-fr/schwifty-helm/commit/ee4b5f6f6006de6fc88c4269cee6a03614cfbeff))
+
 ## [1.0.1](https://github.com/pewty-fr/schwifty-helm/compare/agent/v1.0.0...agent/v1.0.1) (2025-05-15)
 
 
