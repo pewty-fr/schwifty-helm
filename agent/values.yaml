@@ -196,7 +196,7 @@ actions:
             "template": {
               "metadata": {
                 "annotations": {
-                  "schwifty.pewty.fr/update": "{{datenow}}"
+                  "schwifty.pewty.fr/update": "{{ty_datenow}}"
                 }
               }
             }
@@ -216,12 +216,12 @@ actions:
       payloadTemplate: |
         {
           "spec": {
-            "replicas": {{replicas}}
+            "replicas": {{ty_parameters.replicas}}
           }
         }
       parameters:
         - name: "replicas"
-          defaultValue: "1"
+          defaultValue: "{{spec.replicas}}"
           description: "Number of replicas"
     - type: sync
       include:
@@ -239,7 +239,7 @@ actions:
         {
           "metadata": {
             "annotations": {
-              "schwifty.pewty.fr/update": "{{datenow}}"
+              "schwifty.pewty.fr/update": "{{ty_datenow}}"
             }
           }
         }
