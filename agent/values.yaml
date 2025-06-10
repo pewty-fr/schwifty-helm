@@ -781,6 +781,25 @@ listViews:
           template: >-
             {{#ty_memory}}{{status.resources.memory}}{{/ty_memory}}/{{#ty_memory}}{{spec.limits.memory}}{{/ty_memory}}
           type: percentageBar
+    - exclude:
+        - '*'
+      include:
+        - networking.k8s.io/ingresses
+      items:
+        - label: Name
+          priority: 0
+          template: '{{metadata.name}}'
+          width: 3
+        - label: Age
+          priority: 1
+          template: '{{metadata.creationTimestamp}}'
+          type: duration
+        - label: Host
+          template: >-
+            {{#ty_httpshosts}}{{#ty_jsonpath}}$.spec.rules..['host']{{/ty_jsonpath}}{{/ty_httpshosts}}
+          type: link
+        - label: Ingress
+          template: '{{spec.ingressClassName}}'
 
 getViews:
   default:
