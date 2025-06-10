@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.3](https://github.com/pewty-fr/schwifty-helm/compare/agent/v1.0.2...agent/v1.0.3) (2025-06-10)
+
+
+### Bug Fixes
+
+* **agent:** custom actions ([#11](https://github.com/pewty-fr/schwifty-helm/issues/11)) ([f3ba9a1](https://github.com/pewty-fr/schwifty-helm/commit/f3ba9a16e9a56a8b929055973c74363b845c749f))
+
 ## [1.0.2](https://github.com/pewty-fr/schwifty-helm/compare/agent/v1.0.1...agent/v1.0.2) (2025-06-08)
 
 
