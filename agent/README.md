@@ -50,11 +50,11 @@ CRD and Agent for the Schwifty app
 | customizations.support.getView | string | `"default"` |  |
 | actions.default[0].type | string | `"grafana"` |  |
 | actions.default[0].include[0] | string | `"pods"` |  |
-| actions.default[0].exclude | list | `[]` |  |
+| actions.default[0].exclude[0] | string | `"*"` |  |
 | actions.default[0].verb | string | `"link"` |  |
 | actions.default[0].title | string | `"Monitoring"` |  |
 | actions.default[0].icon | string | `"https://upload.wikimedia.org/wikipedia/commons/3/3b/Grafana_icon.svg"` |  |
-| actions.default[0].payloadTemplate | string | `"https://grafana.schwifty.fr/d/Schwifty/pods?orgId=1&var-namespace={{$.metadata.namespace}}&var-pod={{$.metadata.name}}"` |  |
+| actions.default[0].payloadTemplate | string | `"https://grafana.schwifty.fr/d/Schwifty/pods?orgId=1&var-namespace={{#ty_jsonpath}}$.metadata.namespace{{/ty_jsonpath}}&var-pod={{#ty_jsonpath}}$.metadata.name{{/ty_jsonpath}}"` |  |
 | actions.default[0].parameters | list | `[]` |  |
 | actions.default[1].type | string | `"cordon"` |  |
 | actions.default[1].include[0] | string | `"nodes"` |  |
@@ -551,6 +551,21 @@ CRD and Agent for the Schwifty app
 | listViews.default[8].items[5].label | string | `"Memory Limits"` |  |
 | listViews.default[8].items[5].template | string | `"{{#ty_memory}}{{status.resources.memory}}{{/ty_memory}}/{{#ty_memory}}{{spec.limits.memory}}{{/ty_memory}}"` |  |
 | listViews.default[8].items[5].type | string | `"percentageBar"` |  |
+| listViews.default[9].exclude[0] | string | `"*"` |  |
+| listViews.default[9].include[0] | string | `"networking.k8s.io/ingresses"` |  |
+| listViews.default[9].items[0].label | string | `"Name"` |  |
+| listViews.default[9].items[0].priority | int | `0` |  |
+| listViews.default[9].items[0].template | string | `"{{metadata.name}}"` |  |
+| listViews.default[9].items[0].width | int | `3` |  |
+| listViews.default[9].items[1].label | string | `"Age"` |  |
+| listViews.default[9].items[1].priority | int | `1` |  |
+| listViews.default[9].items[1].template | string | `"{{metadata.creationTimestamp}}"` |  |
+| listViews.default[9].items[1].type | string | `"duration"` |  |
+| listViews.default[9].items[2].label | string | `"Host"` |  |
+| listViews.default[9].items[2].template | string | `"{{#ty_httpshosts}}{{#ty_jsonpath}}$.spec.rules..['host']{{/ty_jsonpath}}{{/ty_httpshosts}}"` |  |
+| listViews.default[9].items[2].type | string | `"link"` |  |
+| listViews.default[9].items[3].label | string | `"Ingress"` |  |
+| listViews.default[9].items[3].template | string | `"{{spec.ingressClassName}}"` |  |
 | getViews.default[0].include[0] | string | `"*"` |  |
 | getViews.default[0].exclude | list | `[]` |  |
 | getViews.default[0].items[0].label | string | `"Metadata"` |  |
