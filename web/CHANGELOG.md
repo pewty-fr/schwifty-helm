@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.5](https://github.com/pewty-fr/schwifty-helm/compare/web/v1.0.4...web/v1.0.5) (2025-06-10)
+
+
+### Bug Fixes
+
+* update version ([#13](https://github.com/pewty-fr/schwifty-helm/issues/13)) ([61af6c4](https://github.com/pewty-fr/schwifty-helm/commit/61af6c48d98ffa6b05b5a24429a4d499a0f3ca5a))
+
 ## [1.0.4](https://github.com/pewty-fr/schwifty-helm/compare/web/v1.0.3...web/v1.0.4) (2025-06-08)
 
 
