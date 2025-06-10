@@ -1,6 +1,6 @@
 # agent
 
-![Version: 1.0.1](https://img.shields.io/badge/Version-1.0.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: v1.0.0](https://img.shields.io/badge/AppVersion-v1.0.0-informational?style=flat-square)
+![Version: 1.0.2](https://img.shields.io/badge/Version-1.0.2-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: v1.0.0](https://img.shields.io/badge/AppVersion-v1.0.0-informational?style=flat-square)
 
 CRD and Agent for the Schwifty app
 
@@ -50,11 +50,11 @@ CRD and Agent for the Schwifty app
 | customizations.support.getView | string | `"default"` |  |
 | actions.default[0].type | string | `"grafana"` |  |
 | actions.default[0].include[0] | string | `"pods"` |  |
-| actions.default[0].exclude | list | `[]` |  |
+| actions.default[0].exclude[0] | string | `"*"` |  |
 | actions.default[0].verb | string | `"link"` |  |
 | actions.default[0].title | string | `"Monitoring"` |  |
 | actions.default[0].icon | string | `"https://upload.wikimedia.org/wikipedia/commons/3/3b/Grafana_icon.svg"` |  |
-| actions.default[0].payloadTemplate | string | `"https://grafana.schwifty.fr/d/Schwifty/pods?orgId=1&var-namespace={{$.metadata.namespace}}&var-pod={{$.metadata.name}}"` |  |
+| actions.default[0].payloadTemplate | string | `"https://grafana.schwifty.fr/d/Schwifty/pods?orgId=1&var-namespace={{#ty_jsonpath}}$.metadata.namespace{{/ty_jsonpath}}&var-pod={{#ty_jsonpath}}$.metadata.name{{/ty_jsonpath}}"` |  |
 | actions.default[0].parameters | list | `[]` |  |
 | actions.default[1].type | string | `"cordon"` |  |
 | actions.default[1].include[0] | string | `"nodes"` |  |
@@ -82,7 +82,7 @@ CRD and Agent for the Schwifty app
 | actions.default[7].verb | string | `"patch"` |  |
 | actions.default[7].title | string | `"Restart"` |  |
 | actions.default[7].icon | string | `"58927"` |  |
-| actions.default[7].payloadTemplate | string | `"{\n  \"spec\": {\n    \"template\": {\n      \"metadata\": {\n        \"annotations\": {\n          \"schwifty.pewty.fr/update\": \"{{datenow}}\"\n        }\n      }\n    }\n  }\n}\n"` |  |
+| actions.default[7].payloadTemplate | string | `"{\n  \"spec\": {\n    \"template\": {\n      \"metadata\": {\n        \"annotations\": {\n          \"schwifty.pewty.fr/update\": \"{{ty_datenow}}\"\n        }\n      }\n    }\n  }\n}\n"` |  |
 | actions.default[7].parameters | list | `[]` |  |
 | actions.default[8].type | string | `"scale"` |  |
 | actions.default[8].include[0] | string | `"apps/deployments"` |  |
@@ -92,9 +92,9 @@ CRD and Agent for the Schwifty app
 | actions.default[8].verb | string | `"patch"` |  |
 | actions.default[8].title | string | `"Scale"` |  |
 | actions.default[8].icon | string | `"62475"` |  |
-| actions.default[8].payloadTemplate | string | `"{\n  \"spec\": {\n    \"replicas\": {{replicas}}\n  }\n}\n"` |  |
+| actions.default[8].payloadTemplate | string | `"{\n  \"spec\": {\n    \"replicas\": {{ty_parameters.replicas}}\n  }\n}\n"` |  |
 | actions.default[8].parameters[0].name | string | `"replicas"` |  |
-| actions.default[8].parameters[0].defaultValue | string | `"1"` |  |
+| actions.default[8].parameters[0].defaultValue | string | `"{{spec.replicas}}"` |  |
 | actions.default[8].parameters[0].description | string | `"Number of replicas"` |  |
 | actions.default[9].type | string | `"sync"` |  |
 | actions.default[9].include[0] | string | `"helm.toolkit.fluxcd.io/helmreleases"` |  |
@@ -106,7 +106,7 @@ CRD and Agent for the Schwifty app
 | actions.default[9].verb | string | `"patch"` |  |
 | actions.default[9].title | string | `"Sync"` |  |
 | actions.default[9].icon | string | `"58927"` |  |
-| actions.default[9].payloadTemplate | string | `"{\n  \"metadata\": {\n    \"annotations\": {\n      \"schwifty.pewty.fr/update\": \"{{datenow}}\"\n    }\n  }\n}\n"` |  |
+| actions.default[9].payloadTemplate | string | `"{\n  \"metadata\": {\n    \"annotations\": {\n      \"schwifty.pewty.fr/update\": \"{{ty_datenow}}\"\n    }\n  }\n}\n"` |  |
 | actions.default[9].parameters | list | `[]` |  |
 | actions.default[10].type | string | `"pause"` |  |
 | actions.default[10].include[0] | string | `"helm.toolkit.fluxcd.io/helmreleases"` |  |
@@ -551,6 +551,21 @@ CRD and Agent for the Schwifty app
 | listViews.default[8].items[5].label | string | `"Memory Limits"` |  |
 | listViews.default[8].items[5].template | string | `"{{#ty_memory}}{{status.resources.memory}}{{/ty_memory}}/{{#ty_memory}}{{spec.limits.memory}}{{/ty_memory}}"` |  |
 | listViews.default[8].items[5].type | string | `"percentageBar"` |  |
+| listViews.default[9].exclude[0] | string | `"*"` |  |
+| listViews.default[9].include[0] | string | `"networking.k8s.io/ingresses"` |  |
+| listViews.default[9].items[0].label | string | `"Name"` |  |
+| listViews.default[9].items[0].priority | int | `0` |  |
+| listViews.default[9].items[0].template | string | `"{{metadata.name}}"` |  |
+| listViews.default[9].items[0].width | int | `3` |  |
+| listViews.default[9].items[1].label | string | `"Age"` |  |
+| listViews.default[9].items[1].priority | int | `1` |  |
+| listViews.default[9].items[1].template | string | `"{{metadata.creationTimestamp}}"` |  |
+| listViews.default[9].items[1].type | string | `"duration"` |  |
+| listViews.default[9].items[2].label | string | `"Host"` |  |
+| listViews.default[9].items[2].template | string | `"{{#ty_httpshosts}}{{#ty_jsonpath}}$.spec.rules..['host']{{/ty_jsonpath}}{{/ty_httpshosts}}"` |  |
+| listViews.default[9].items[2].type | string | `"link"` |  |
+| listViews.default[9].items[3].label | string | `"Ingress"` |  |
+| listViews.default[9].items[3].template | string | `"{{spec.ingressClassName}}"` |  |
 | getViews.default[0].include[0] | string | `"*"` |  |
 | getViews.default[0].exclude | list | `[]` |  |
 | getViews.default[0].items[0].label | string | `"Metadata"` |  |

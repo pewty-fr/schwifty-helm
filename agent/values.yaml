@@ -143,11 +143,12 @@ actions:
     - type: grafana
       include:
         - "pods"
-      exclude: []
+      exclude:
+        - "*"
       verb: "link"
       title: "Monitoring"
       icon: "https://upload.wikimedia.org/wikipedia/commons/3/3b/Grafana_icon.svg"
-      payloadTemplate: "https://grafana.schwifty.fr/d/Schwifty/pods?orgId=1&var-namespace={{$.metadata.namespace}}&var-pod={{$.metadata.name}}"
+      payloadTemplate: "https://grafana.schwifty.fr/d/Schwifty/pods?orgId=1&var-namespace={{#ty_jsonpath}}$.metadata.namespace{{/ty_jsonpath}}&var-pod={{#ty_jsonpath}}$.metadata.name{{/ty_jsonpath}}"
       parameters: []
     - type: cordon
       include:
@@ -196,7 +197,7 @@ actions:
             "template": {
               "metadata": {
                 "annotations": {
-                  "schwifty.pewty.fr/update": "{{datenow}}"
+                  "schwifty.pewty.fr/update": "{{ty_datenow}}"
                 }
               }
             }
@@ -216,12 +217,12 @@ actions:
       payloadTemplate: |
         {
           "spec": {
-            "replicas": {{replicas}}
+            "replicas": {{ty_parameters.replicas}}
           }
         }
       parameters:
         - name: "replicas"
-          defaultValue: "1"
+          defaultValue: "{{spec.replicas}}"
           description: "Number of replicas"
     - type: sync
       include:
@@ -239,7 +240,7 @@ actions:
         {
           "metadata": {
             "annotations": {
-              "schwifty.pewty.fr/update": "{{datenow}}"
+              "schwifty.pewty.fr/update": "{{ty_datenow}}"
             }
           }
         }
@@ -780,6 +781,25 @@ listViews:
           template: >-
             {{#ty_memory}}{{status.resources.memory}}{{/ty_memory}}/{{#ty_memory}}{{spec.limits.memory}}{{/ty_memory}}
           type: percentageBar
+    - exclude:
+        - '*'
+      include:
+        - networking.k8s.io/ingresses
+      items:
+        - label: Name
+          priority: 0
+          template: '{{metadata.name}}'
+          width: 3
+        - label: Age
+          priority: 1
+          template: '{{metadata.creationTimestamp}}'
+          type: duration
+        - label: Host
+          template: >-
+            {{#ty_httpshosts}}{{#ty_jsonpath}}$.spec.rules..['host']{{/ty_jsonpath}}{{/ty_httpshosts}}
+          type: link
+        - label: Ingress
+          template: '{{spec.ingressClassName}}'
 
 getViews:
   default:
