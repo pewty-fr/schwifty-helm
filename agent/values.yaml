@@ -143,11 +143,12 @@ actions:
     - type: grafana
       include:
         - "pods"
-      exclude: []
+      exclude:
+        - "*"
       verb: "link"
       title: "Monitoring"
       icon: "https://upload.wikimedia.org/wikipedia/commons/3/3b/Grafana_icon.svg"
-      payloadTemplate: "https://grafana.schwifty.fr/d/Schwifty/pods?orgId=1&var-namespace={{$.metadata.namespace}}&var-pod={{$.metadata.name}}"
+      payloadTemplate: "https://grafana.schwifty.fr/d/Schwifty/pods?orgId=1&var-namespace={{#ty_jsonpath}}$.metadata.namespace{{/ty_jsonpath}}&var-pod={{#ty_jsonpath}}$.metadata.name{{/ty_jsonpath}}"
       parameters: []
     - type: cordon
       include:
