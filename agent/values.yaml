@@ -151,15 +151,35 @@ actions:
       payloadTemplate: "https://grafana.schwifty.fr/d/Schwifty/pods?orgId=1&var-namespace={{#ty_jsonpath}}$.metadata.namespace{{/ty_jsonpath}}&var-pod={{#ty_jsonpath}}$.metadata.name{{/ty_jsonpath}}"
       parameters: []
     - type: cordon
+      title: "Cordon"
       include:
         - "nodes"
       exclude:
         - "*"
+      verb: "patch"
+      path: |
+        -/v1/nodes/-/{{ .metadata.namespace | default "-"}}/{{ .metadata.name }}
+      payload: |
+        {
+          "spec": {
+            "unschedulable": true
+          }
+        }
     - type: uncordon
+      title: Uncordon
       include:
         - "nodes"
       exclude:
         - "*"
+      verb: "patch"
+      path: |
+        -/v1/nodes/-/{{ .metadata.namespace | default "-"}}/{{ .metadata.name }}
+      payload: |
+        {
+          "spec": {
+            "unschedulable": false
+          }
+        }
     - type: drain
       include:
         - "nodes"
@@ -181,6 +201,10 @@ actions:
         - "pods"
       exclude:
         - "*"
+      # paths:
+      # - value: |
+      #   {{- $resourceDefinition := resourceDefinition .apiVersion .kind}}
+      #   {{ $resourceDefinition.Group | default "-" }}/{{ $resourceDefinition.Name }}/{{ .metadata.namespace | default "-"}}/{{ .metadata.name }}/{{"{{"}} .port {{"}}"}}
     - type: restart
       include:
         - "apps/deployments"
@@ -214,7 +238,7 @@ actions:
       verb: "patch"
       title: "Scale"
       icon: "62475"
-      payloadTemplate: |
+      payload: |
         {
           "spec": {
             "replicas": {{ty_parameters.replicas}}
@@ -272,7 +296,7 @@ actions:
       verb: "patch"
       title: "Resume"
       icon: "58573"
-      payloadTemplate: |
+      payload: |
         {
           "spec": {
             "suspend": false
