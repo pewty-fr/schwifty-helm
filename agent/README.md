@@ -57,11 +57,19 @@ CRD and Agent for the Schwifty app
 | actions.default[0].payloadTemplate | string | `"https://grafana.schwifty.fr/d/Schwifty/pods?orgId=1&var-namespace={{#ty_jsonpath}}$.metadata.namespace{{/ty_jsonpath}}&var-pod={{#ty_jsonpath}}$.metadata.name{{/ty_jsonpath}}"` |  |
 | actions.default[0].parameters | list | `[]` |  |
 | actions.default[1].type | string | `"cordon"` |  |
+| actions.default[1].title | string | `"Cordon"` |  |
 | actions.default[1].include[0] | string | `"nodes"` |  |
 | actions.default[1].exclude[0] | string | `"*"` |  |
+| actions.default[1].verb | string | `"patch"` |  |
+| actions.default[1].path | string | `"-/v1/nodes/-/{{ .metadata.namespace | default \"-\"}}/{{ .metadata.name }}\n"` |  |
+| actions.default[1].payload | string | `"{\n  \"spec\": {\n    \"unschedulable\": true\n  }\n}\n"` |  |
 | actions.default[2].type | string | `"uncordon"` |  |
+| actions.default[2].title | string | `"Uncordon"` |  |
 | actions.default[2].include[0] | string | `"nodes"` |  |
 | actions.default[2].exclude[0] | string | `"*"` |  |
+| actions.default[2].verb | string | `"patch"` |  |
+| actions.default[2].path | string | `"-/v1/nodes/-/{{ .metadata.namespace | default \"-\"}}/{{ .metadata.name }}\n"` |  |
+| actions.default[2].payload | string | `"{\n  \"spec\": {\n    \"unschedulable\": false\n  }\n}\n"` |  |
 | actions.default[3].type | string | `"drain"` |  |
 | actions.default[3].include[0] | string | `"nodes"` |  |
 | actions.default[3].exclude[0] | string | `"*"` |  |
@@ -92,7 +100,7 @@ CRD and Agent for the Schwifty app
 | actions.default[8].verb | string | `"patch"` |  |
 | actions.default[8].title | string | `"Scale"` |  |
 | actions.default[8].icon | string | `"62475"` |  |
-| actions.default[8].payloadTemplate | string | `"{\n  \"spec\": {\n    \"replicas\": {{ty_parameters.replicas}}\n  }\n}\n"` |  |
+| actions.default[8].payload | string | `"{\n  \"spec\": {\n    \"replicas\": {{ty_parameters.replicas}}\n  }\n}\n"` |  |
 | actions.default[8].parameters[0].name | string | `"replicas"` |  |
 | actions.default[8].parameters[0].defaultValue | string | `"{{spec.replicas}}"` |  |
 | actions.default[8].parameters[0].description | string | `"Number of replicas"` |  |
@@ -126,7 +134,7 @@ CRD and Agent for the Schwifty app
 | actions.default[11].verb | string | `"patch"` |  |
 | actions.default[11].title | string | `"Resume"` |  |
 | actions.default[11].icon | string | `"58573"` |  |
-| actions.default[11].payloadTemplate | string | `"{\n  \"spec\": {\n    \"suspend\": false\n  }\n}\n"` |  |
+| actions.default[11].payload | string | `"{\n  \"spec\": {\n    \"suspend\": false\n  }\n}\n"` |  |
 | actions.default[11].parameters | list | `[]` |  |
 | actions.default[12].type | string | `"get"` |  |
 | actions.default[12].include[0] | string | `"*"` |  |
